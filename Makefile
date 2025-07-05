@@ -1,46 +1,44 @@
-# Makefile
+# Nome do compilador
+CC = gcc
 
-# Variáveis
-CC = gcc             # Compilador C
-CFLAGS = -Wall -Iinclude # Flags do compilador: -Wall para todos os warnings, -Iinclude para procurar cabeçalhos em 'include/'
-LDFLAGS =            # Flags do linker (para bibliotecas externas, por exemplo)
-BINDIR = bin         # Diretório para o executável final
-OBJDIR = obj         # Diretório para os arquivos objeto
-SRC_DIR = src        # Diretório dos arquivos fonte
-INCLUDE_DIR = include # Diretório dos arquivos de cabeçalho
+# Flags de compilação (avisos, padrão do C, etc.)
+CFLAGS = -Wall -Wextra -std=c99 -Iinclude
 
-# Nome do executável
-TARGET = meu_programa
+# Diretórios
+SRC_DIR = src
+OBJ_DIR = obj
+BIN_DIR = bin
 
-# Lista de arquivos fonte .c
-SRCS = $(wildcard $(SRC_DIR)/*.c) # Pega todos os arquivos .c no diretório src/
+# Nome do executável final
+EXECUTAVEL = $(BIN_DIR)/grafo_analise
 
-# Lista de arquivos objeto .o correspondentes aos arquivos fonte
-OBJS = $(patsubst $(SRC_DIR)/%.c, $(OBJDIR)/%.o, $(SRCS))
+# Encontra todos os arquivos fonte .c no diretório src
+SRCS = $(wildcard $(SRC_DIR)/*.c)
 
-.PHONY: all clean run
+# Gera a lista de arquivos objeto correspondentes na pasta obj
+OBJS = $(patsubst $(SRC_DIR)/%.c, $(OBJ_DIR)/%.o, $(SRCS))
 
-all: dirs $(BINDIR)/$(TARGET)
+# Regra padrão: o que acontece quando você digita apenas "make"
+all: $(EXECUTAVEL)
 
-# Cria os diretórios de saída se não existirem
-dirs:
-	@mkdir -p $(BINDIR)
-	@mkdir -p $(OBJDIR)
+# --- ADICIONE A REGRA 'RUN' AQUI ---
+# Regra para compilar (se necessário) e executar o programa
+run: all
+	@echo "--- Executando o programa ---"
+	./$(EXECUTAVEL)
+	@echo "--- Programa finalizado ---"
 
-# Regra para compilar o executável final
-$(BINDIR)/$(TARGET): $(OBJS)
-	$(CC) $(LDFLAGS) $^ -o $@
+# Regra para linkar os objetos e criar o executável final
+$(EXECUTAVEL): $(OBJS)
+	@mkdir -p $(BIN_DIR)
+	$(CC) $(OBJS) -o $(EXECUTAVEL)
 
-# Regra genérica para compilar arquivos .c em .o
-# $< é o primeiro pré-requisito (o arquivo .c)
-# $@ é o nome do target (o arquivo .o)
-$(OBJDIR)/%.o: $(SRC_DIR)/%.c
+# Regra para compilar cada arquivo .c em um arquivo .o
+$(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
+	@mkdir -p $(OBJ_DIR)
 	$(CC) $(CFLAGS) -c $< -o $@
 
-# Regra de limpeza: remove arquivos gerados
+# Regra de limpeza: apaga os arquivos gerados
 clean:
-	@rm -rf $(OBJDIR) $(BINDIR)
-
-# Regra para executar o programa após a compilação
-run: all
-	@./$(BINDIR)/$(TARGET)
+	@echo "Limpando arquivos gerados..."
+	rm -rf $(OBJ_DIR) $(BIN_DIR)
