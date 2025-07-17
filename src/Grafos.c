@@ -1,5 +1,4 @@
-// src/utils.c
-#include "Grafos.h" // Inclui todas as definições e protótipos
+#include "Grafos.h" 
 
 // Implementação das funções de gerenciamento de grafo
 int** criarGrafo(int num_vertices) {
@@ -52,45 +51,32 @@ int** gerarMatrizAdjacenciaAleatoria(int numVertices, int permitirNegativos, int
     int **grafo = criarGrafo(numVertices);
     if (grafo == NULL) return NULL;
 
-    // --- CORREÇÃO PRINCIPAL ---
-    // Em vez de preencher com 0, inicializamos o grafo corretamente.
-    // Agora, grafo[i][j] = INF (se i != j) e grafo[i][i] = 0.
     inicializarMatrizGrafo(grafo, numVertices);
-
-    // O restante da lógica para adicionar arestas aleatórias permanece o mesmo.
-    // Ela agora funcionará sobre uma matriz base correta.
-
     if (permitirNegativos && controleCiclo == 0) {
-        // --- CENÁRIO 1: GARANTIR AUSÊNCIA DE CICLOS NEGATIVOS (ESTRUTURA DAG) ---
         printf("Gerando grafo com pesos negativos, mas sem ciclos negativos (DAG).\n");
         for (int i = 0; i < numVertices; i++) {
-            for (int j = i + 1; j < numVertices; j++) { // Arestas sempre para frente (i -> j)
+            for (int j = i + 1; j < numVertices; j++) {
                 if (rand() % 2 == 1) { // 50% de chance de aresta
                     int peso = (rand() % 41) - 20; // [-20, 20]
                     if (peso == 0) peso = 1; // Evita peso 0 se não desejado
                     grafo[i][j] = peso;
                 }
-                if (rand() % 4 == 1) { // 25% de chance de aresta de retorno
-                    // Arestas de "retorno" (j -> i) devem ter peso positivo para evitar ciclos
+                if (rand() % 4 == 1) {
                     grafo[j][i] = (rand() % 20) + 1; // [1, 20]
                 }
             }
         }
     } else {
-        // --- CENÁRIO 2 e 3: GERAÇÃO PADRÃO (PODE OU NÃO TER CICLOS) ---
         for (int i = 0; i < numVertices; i++) {
             for (int j = 0; j < numVertices; j++) {
                 if (i == j) continue;
-
-                // Apenas adiciona uma aresta se não houver uma (grafo[i][j] == INF)
-                // e se o sorteio for positivo (ex: 50% de chance).
                 if (grafo[i][j] == INF && (rand() % 2 == 1)) {
                     int peso;
                     if (permitirNegativos) {
-                        peso = (rand() % 41) - 20; // [-20, 20]
+                        peso = (rand() % 41) - 20;
                         if (peso == 0) peso = 1;
                     } else {
-                        peso = (rand() % 20) + 1;  // [1, 20]
+                        peso = (rand() % 20) + 1;
                     }
                     grafo[i][j] = peso;
                 }
@@ -98,10 +84,8 @@ int** gerarMatrizAdjacenciaAleatoria(int numVertices, int permitirNegativos, int
         }
 
         if (permitirNegativos && controleCiclo == 1) {
-            // --- IMPLANTAR UM CICLO NEGATIVO GARANTIDO ---
             printf("Implantando um ciclo de peso negativo garantido.\n");
             if (numVertices >= 3) {
-                // Cria um ciclo 0 -> 1 -> 2 -> 0 com soma negativa
                 grafo[0][1] = -10;
                 grafo[1][2] = -10;
                 grafo[2][0] = 5;   // Soma do ciclo = -15
@@ -114,34 +98,6 @@ int** gerarMatrizAdjacenciaAleatoria(int numVertices, int permitirNegativos, int
     return grafo;
 }
 
-// void gerarGrafoAleatorio(int** grafo, int num_vertices, double densidade, int 50, int permitir_pesos_negativos) {
-//     inicializarMatrizGrafo(grafo, num_vertices);
-//     srand((unsigned int)time(NULL));
-
-//     long long max_arestas_possiveis = (long long)num_vertices * (num_vertices - 1);
-//     long long arestas_a_adicionar = (long long)(densidade * max_arestas_possiveis);
-
-//     long long arestas_adicionadas = 0;
-//     while (arestas_adicionadas < arestas_a_adicionar) {
-//         int u = rand() % num_vertices;
-//         int v = rand() % num_vertices;
-
-//         if (u == v) continue;
-
-//         if (grafo[u][v] == INF) {
-//             int peso;
-//             if (permitir_pesos_negativos && (rand() % 100 < 30)) {
-//                 peso = -(rand() % max_peso) - 1;
-//             } else {
-//                 peso = (rand() % max_peso) + 1;
-//             }
-//             grafo[u][v] = peso;
-//             arestas_adicionadas++;
-//         }
-//     }
-// }
-
-// Implementação das funções de impressão
 void imprimirDistancias(int num_vertices, int dist[], int inicio, const char* algoritmo) {
     printf("Distancias mais curtas do vertice %d (Algoritmo %s):\n", inicio, algoritmo);
     for (int i = 0; i < num_vertices; i++) {
@@ -193,54 +149,6 @@ int** carregarGrafo( int* V) {
     return grafo;
 }
 
-// int** carregarGrafo(const char* nomeArquivo, int* V) {
-//     FILE* f = fopen(nomeArquivo, "r");
-//     if (!f) {
-//         printf("Erro ao abrir o arquivo '%s'.\n", nomeArquivo);
-//         exit(1);
-//     }
-
-//     int A; // Variável para armazenar o número de arestas
-
-//     // Lê o número de vértices (V) e de arestas (A) da primeira linha
-//     if (fscanf(f, "%d %d", V, &A) != 2) {
-//         printf("Erro ao ler o numero de vertices e arestas.\n");
-//         fclose(f);
-//         exit(1);
-//     }
-
-//     // Declara a variável 'grafo' antes de usar
-//     int** grafo;
-
-//     // Aloca a matriz usando o valor de V (*V)
-//     grafo = (int**)malloc((*V) * sizeof(int*));
-//     for (int i = 0; i < (*V); i++) {
-//         grafo[i] = (int*)malloc((*V) * sizeof(int));
-//     }
-
-//     // Inicializa a matriz com um valor para "infinito"
-//     // (garanta que a constante INF esteja definida em algum lugar)
-//     for (int i = 0; i < (*V); i++) {
-//         for (int j = 0; j < (*V); j++) {
-//             if (i == j) {
-//                 grafo[i][j] = 0; // Distância de um nó para ele mesmo é 0
-//             } else {
-//                 grafo[i][j] = INF; // Ou INF, -1 para indicar ausência de aresta
-//             }
-//         }
-//     }
-
-//     int u, v, peso;
-//     // Lê cada aresta do arquivo
-//     while (fscanf(f, "%d %d %d", &u, &v, &peso) == 3) {
-//         grafo[u][v] = peso;
-//         // Se o grafo for não-direcionado, adicione a linha abaixo:
-//         // grafo[v][u] = peso;
-//     }
-
-//     fclose(f);
-//     return grafo; // Retorna o grafo criado
-// }
 
 int** gerarGrafoPorArestas(int numVertices, int numArestas, int permitirNegativos) {
     // 1. Validação dos Parâmetros
@@ -254,7 +162,6 @@ int** gerarGrafoPorArestas(int numVertices, int numArestas, int permitirNegativo
         return NULL;
     }
 
-    // O número máximo de arestas em um grafo direcionado sem laços é V * (V-1)
     long long maxArestasPossiveis = (long long)numVertices * (numVertices - 1);
     if (numArestas > maxArestasPossiveis) {
         printf("Aviso: O número de arestas solicitado (%d) é maior que o máximo possível (%lld).\n", numArestas, maxArestasPossiveis);
@@ -262,25 +169,22 @@ int** gerarGrafoPorArestas(int numVertices, int numArestas, int permitirNegativo
         numArestas = maxArestasPossiveis;
     }
 
-    // 2. Alocação e Inicialização do Grafo
     int** grafo = criarGrafo(numVertices);
     if (grafo == NULL) {
-        return NULL; // Falha na alocação
+        return NULL; 
     }
-    // Inicializa com 0 na diagonal e INF no resto, passo fundamental!
+
     inicializarMatrizGrafo(grafo, numVertices);
 
-    // 3. Adição Aleatória das Arestas
     int arestasAdicionadas = 0;
     long long tentativas = 0;
-    // Fator de segurança para evitar loop infinito se for difícil encontrar arestas livres
+
     long long limiteDeTentativas = (long long)numArestas * 10 + numVertices * numVertices; 
 
     while (arestasAdicionadas < numArestas && tentativas < limiteDeTentativas) {
         int u = rand() % numVertices;
         int v = rand() % numVertices;
 
-        // Tenta novamente se for um laço (u == v) ou se a aresta já existe (grafo[u][v] != INF)
         if (u == v || grafo[u][v] != INF) {
             tentativas++;
             continue;
@@ -290,7 +194,7 @@ int** gerarGrafoPorArestas(int numVertices, int numArestas, int permitirNegativo
         int peso;
         if (permitirNegativos) {
             peso = (rand() % 41) - 20; // Gera peso entre -20 e 20
-            if (peso == 0) peso = 1;   // Evita peso 0, se desejado
+            if (peso == 0) peso = 1;   // Evita peso 0
         } else {
             peso = (rand() % 20) + 1;  // Gera peso entre 1 e 20
         }

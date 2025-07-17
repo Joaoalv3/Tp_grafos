@@ -2,14 +2,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <limits.h>
-#include <time.h> // Adicionado para clock_t
+#include <time.h> 
 
-// Garanta que INF esteja definido como INT_MAX em seu header
+
 #ifndef INF
 #define INF INT_MAX
 #endif
 
-// Supondo que criarGrafo e liberarGrafo estão em um header incluído (ex: Grafos.h)
+
 int** criarGrafo(int num_vertices);
 void liberarGrafo(int** grafo, int num_vertices);
 void imprimirMatrizCaminhos(int num_vertices, int** dist_matrix, const char* algoritmo);
@@ -23,9 +23,6 @@ void floydWarshall(int num_vertices, int** grafo) {
 
     int** dist = criarGrafo(num_vertices);
 
-    // --- CORREÇÃO: Bloco de inicialização simplificado e robusto ---
-    // A matriz de distâncias iniciais é uma cópia da matriz do grafo.
-    // Isso assume que o grafo de entrada já usa INF para "sem aresta".
     for (int i = 0; i < num_vertices; i++) {
         for (int j = 0; j < num_vertices; j++) {
             dist[i][j] = grafo[i][j];
@@ -38,7 +35,6 @@ void floydWarshall(int num_vertices, int** grafo) {
             for (int j = 0; j < num_vertices; j++) {
                 // Se o caminho i->k e k->j existem, verifique se são uma melhor rota
                 if (dist[i][k] != INF && dist[k][j] != INF) {
-                    // O cast para (long long) previne overflow
                     if ((long long)dist[i][k] + dist[k][j] < dist[i][j]) {
                         dist[i][j] = dist[i][k] + dist[k][j];
                     }
@@ -47,7 +43,7 @@ void floydWarshall(int num_vertices, int** grafo) {
         }
     }
 
-    // Detecção de ciclos negativos (esta parte já estava correta)
+    // Detecção de ciclos negativos
     for (int i = 0; i < num_vertices; i++) {
         if (dist[i][i] < 0) {
             printf("\nAVISO (Floyd-Warshall): Grafo contem ciclo de peso negativo!\n");
